@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useDropzone, FileRejection } from "react-dropzone";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 import { FileIcon } from "@/components/ui/FileIcon";
 import { Loader2, X, AlertTriangle } from "lucide-react";
 import { AnalysisResult } from "@/types/analysis";
+import { AnalysisResults } from "@/components/results/AnalysisResults";
 
 export function UploadSection() {
   const [file, setFile] = useState<File | null>(null);
@@ -23,6 +24,20 @@ export function UploadSection() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (analysisResult && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [analysisResult]);
+
+  const resetAll = () => {
+    setFile(null);
+    setDocType("");
+    setAnalysisResult(null);
+    setError(null);
+  };
 
   const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
     setError(null);
@@ -102,7 +117,8 @@ export function UploadSection() {
   };
 
   return (
-    <Card className="w-full max-w-2xl bg-slate-900 border-slate-800 mx-auto">
+    <div className="w-full flex flex-col items-center">
+      <Card className="w-full max-w-2xl bg-slate-900 border-slate-800 mx-auto">
       <CardContent className="p-6">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
@@ -192,5 +208,21 @@ export function UploadSection() {
         </div>
       </CardContent>
     </Card>
+    
+      {analysisResult && (
+        <div className="w-full mt-12 mb-24" ref={resultsRef}>
+          <AnalysisResults result={analysisResult} />
+          <div className="mt-12 flex justify-center">
+            <Button 
+              variant="outline" 
+              onClick={resetAll} 
+              className="bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+            >
+              🔄 Analisis Dokumen Lain
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
