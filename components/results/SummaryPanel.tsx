@@ -12,7 +12,7 @@ export function SummaryPanel({ summary }: SummaryPanelProps) {
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-white">{summary.title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="p-3 sm:p-6 space-y-4">
         <div className="space-y-2 text-sm text-slate-300">
           <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
             <span className="font-semibold text-slate-400 min-w-[150px]">Pihak yang terlibat:</span>

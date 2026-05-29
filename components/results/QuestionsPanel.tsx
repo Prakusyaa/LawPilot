@@ -14,7 +14,7 @@ export function QuestionsPanel({ questions }: QuestionsPanelProps) {
       <div className="space-y-3">
         {questions.map((question, index) => (
           <Card key={index} className="bg-slate-900 border-slate-800">
-            <CardContent className="p-4 flex items-start gap-4">
+            <CardContent className="p-3 sm:p-5 flex items-start gap-4">
               <span className="text-slate-600 font-bold text-2xl shrink-0 mt-[-4px]">
                 {index + 1}
               </span>

@@ -17,12 +17,12 @@ import { Loader2, X, AlertTriangle } from "lucide-react";
 import { AnalysisResult } from "@/types/analysis";
 import { AnalysisResults } from "@/components/results/AnalysisResults";
 import { ChatSection } from "@/components/ChatSection";
+import { AnalysisSkeleton } from "@/components/AnalysisSkeleton";
 
 export function UploadSection() {
   const [file, setFile] = useState<File | null>(null);
   const [docType, setDocType] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [fileBase64, setFileBase64] = useState<string | null>(null);
   const [fileMimeType, setFileMimeType] = useState<string | null>(null);
@@ -87,6 +87,13 @@ export function UploadSection() {
     setError(null);
     setAnalysisResult(null);
 
+    if (file.type === "application/pdf" && file.size > 8 * 1024 * 1024) {
+      setError("PDF besar mungkin memerlukan waktu lebih lama untuk dianalisis.");
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -97,7 +104,10 @@ export function UploadSection() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const json = await response.json();
 
@@ -118,8 +128,14 @@ export function UploadSection() {
       const b64 = await toBase64(file);
       setFileBase64(b64);
       setFileMimeType(file.type);
-    } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan yang tidak terduga.");
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
+        setError("Analisis memakan waktu terlalu lama. Coba dengan dokumen yang lebih kecil.");
+      } else if (err instanceof Error) {
+        setError(err.message || "Terjadi kesalahan yang tidak terduga.");
+      } else {
+        setError("Terjadi kesalahan yang tidak terduga.");
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -136,7 +152,7 @@ export function UploadSection() {
   return (
     <div className="w-full flex flex-col items-center">
       <Card className="w-full max-w-2xl bg-slate-900 border-slate-800 mx-auto">
-      <CardContent className="p-6">
+      <CardContent className="p-3 sm:p-6">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <Select value={docType} onValueChange={(val) => setDocType(val || "")}>
@@ -154,8 +170,10 @@ export function UploadSection() {
 
           <div
             {...getRootProps()}
+            role="button"
+            aria-label="Upload dokumen"
             className={`
-              relative flex flex-col items-center justify-center min-h-[200px] p-6 rounded-xl border-2 border-dashed cursor-pointer transition-colors text-center
+              relative flex flex-col items-center justify-center min-h-[180px] p-6 rounded-xl border-2 border-dashed cursor-pointer transition-colors text-center
               ${
                 isDragActive
                   ? "border-blue-400 bg-blue-950/30"
@@ -176,6 +194,7 @@ export function UploadSection() {
                   type="button"
                   variant="ghost"
                   size="icon"
+                  aria-label="Hapus file"
                   className="absolute top-2 right-2 h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-800"
                   onClick={removeFile}
                 >
@@ -199,8 +218,8 @@ export function UploadSection() {
           </div>
 
           {error && (
-            <Alert variant="destructive" className="bg-red-950/30 text-red-400 border-red-900/50">
-              <AlertTriangle className="h-4 w-4 !text-red-400" />
+            <Alert variant="destructive" className="bg-red-950/30 text-red-400 border-red-900/50" role="alert">
+              <AlertTriangle className="h-4 w-4 !text-red-400" aria-hidden="true" />
               <AlertDescription className="ml-2 font-medium">
                 {error}
               </AlertDescription>
@@ -226,7 +245,9 @@ export function UploadSection() {
       </CardContent>
     </Card>
     
-      {analysisResult && (
+      {isAnalyzing ? (
+        <AnalysisSkeleton />
+      ) : analysisResult ? (
         <div className="w-full mt-12 mb-24" ref={resultsRef}>
           <AnalysisResults result={analysisResult} />
           
@@ -244,7 +265,7 @@ export function UploadSection() {
             </Button>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

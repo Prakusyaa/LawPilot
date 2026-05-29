@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const contents: any[] = [
+    const contents: Array<Record<string, unknown>> = [
       {
         role: "user",
         parts: [

@@ -10,7 +10,7 @@ export function RiskPanel({ clauses }: RiskPanelProps) {
   if (clauses.length === 0) {
     return (
       <Card className="bg-green-950/20 border-green-900/50">
-        <CardContent className="p-6 text-center text-green-400 font-medium">
+        <CardContent className="p-3 sm:p-6 text-center text-green-400 font-medium">
           ✅ Tidak ditemukan klausul berisiko tinggi.
         </CardContent>
       </Card>
@@ -40,10 +40,10 @@ export function RiskPanel({ clauses }: RiskPanelProps) {
 
         return (
           <Card key={index} className={`bg-slate-900 overflow-hidden ${borderClass}`}>
-            <CardContent className="p-5">
+            <CardContent className="p-3 sm:p-5">
               <div className="flex justify-between items-start gap-4 mb-3">
                 <h4 className="text-slate-100 font-medium leading-relaxed">{clause.clause}</h4>
-                <Badge variant={badgeVariant} className={`shrink-0 ${badgeClass} border-0`}>
+                <Badge variant={badgeVariant} className={`shrink-0 ${badgeClass} border-0`} aria-label={`Tingkat risiko: ${badgeText}`}>
                   {badgeText}
                 </Badge>
               </div>
@@ -52,7 +52,7 @@ export function RiskPanel({ clauses }: RiskPanelProps) {
               {clause.originalText && (
                 <blockquote className="border-l-2 border-slate-700 pl-3 py-1 mt-3 bg-slate-950/50 rounded-r-md">
                   <p className="text-slate-500 italic text-xs">
-                    "{clause.originalText}"
+                    &quot;{clause.originalText}&quot;
                   </p>
                 </blockquote>
               )}

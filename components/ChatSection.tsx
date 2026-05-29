@@ -40,7 +40,7 @@ export function ChatSection({ fileBase64, fileMimeType }: ChatSectionProps) {
     if (!text || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       role: "user",
       content: text,
     };
@@ -74,17 +74,18 @@ export function ChatSection({ fileBase64, fileMimeType }: ChatSectionProps) {
       }
 
       const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: crypto.randomUUID(),
         role: "assistant",
         content: data.answer,
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : "Terjadi kesalahan";
       const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: crypto.randomUUID(),
         role: "assistant",
-        content: `Error: ${error.message}`,
+        content: `Error: ${errMsg}`,
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -107,7 +108,7 @@ export function ChatSection({ fileBase64, fileMimeType }: ChatSectionProps) {
           💬 Tanya tentang dokumen ini
         </CardTitle>
         <p className="text-sm text-slate-400 font-normal">
-          Aktif karena dokumen sudah dianalisis. Contoh: 'Apa yang terjadi jika saya resign sebelum 6 bulan?'
+          Aktif karena dokumen sudah dianalisis. Contoh: &apos;Apa yang terjadi jika saya resign sebelum 6 bulan?&apos;
         </p>
       </CardHeader>
       
@@ -139,7 +140,7 @@ export function ChatSection({ fileBase64, fileMimeType }: ChatSectionProps) {
                   className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div 
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                       m.role === 'user' 
                         ? 'bg-blue-600 text-white rounded-br-none' 
                         : 'bg-slate-800 text-slate-100 rounded-bl-none border border-slate-700'
@@ -150,8 +151,8 @@ export function ChatSection({ fileBase64, fileMimeType }: ChatSectionProps) {
                 </div>
               ))}
               {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-slate-800 text-slate-100 rounded-2xl rounded-bl-none border border-slate-700 px-4 py-4 flex items-center gap-1.5">
+                <div className="flex justify-start" aria-live="polite">
+                  <div className="bg-slate-800 text-slate-100 rounded-2xl rounded-bl-none border border-slate-700 px-4 py-4 flex items-center gap-1.5" aria-label="Sedang memuat...">
                     <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                     <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
                     <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
@@ -169,6 +170,7 @@ export function ChatSection({ fileBase64, fileMimeType }: ChatSectionProps) {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
               placeholder="Tanya tentang dokumen ini..."
+              aria-label="Pertanyaan tentang dokumen"
               className="resize-none min-h-[60px] bg-slate-900 border-slate-700 text-white focus-visible:ring-blue-500"
               rows={2}
             />

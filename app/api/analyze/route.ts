@@ -38,7 +38,17 @@ export async function POST(req: NextRequest) {
     
     // Strip any accidental markdown fences
     const cleaned = raw.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(cleaned);
+    
+    let parsed;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (parseError) {
+      console.error("JSON Parse Error:", parseError, "Raw output:", raw);
+      return NextResponse.json(
+        { error: "Gemini tidak dapat membaca dokumen ini. Pastikan dokumen tidak terenkripsi atau terlindungi password." },
+        { status: 400 }
+      );
+    }
 
     return NextResponse.json({ success: true, data: parsed });
   } catch (err) {
