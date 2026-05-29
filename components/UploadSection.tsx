@@ -16,6 +16,7 @@ import { FileIcon } from "@/components/ui/FileIcon";
 import { Loader2, X, AlertTriangle } from "lucide-react";
 import { AnalysisResult } from "@/types/analysis";
 import { AnalysisResults } from "@/components/results/AnalysisResults";
+import { ChatSection } from "@/components/ChatSection";
 
 export function UploadSection() {
   const [file, setFile] = useState<File | null>(null);
@@ -23,6 +24,8 @@ export function UploadSection() {
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [fileBase64, setFileBase64] = useState<string | null>(null);
+  const [fileMimeType, setFileMimeType] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -36,6 +39,8 @@ export function UploadSection() {
     setFile(null);
     setDocType("");
     setAnalysisResult(null);
+    setFileBase64(null);
+    setFileMimeType(null);
     setError(null);
   };
 
@@ -101,6 +106,18 @@ export function UploadSection() {
       }
 
       setAnalysisResult(json.data);
+
+      const toBase64 = (f: File): Promise<string> =>
+        new Promise((res, rej) => {
+          const reader = new FileReader();
+          reader.onload = () => res((reader.result as string).split(",")[1]);
+          reader.onerror = rej;
+          reader.readAsDataURL(f);
+        });
+
+      const b64 = await toBase64(file);
+      setFileBase64(b64);
+      setFileMimeType(file.type);
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan yang tidak terduga.");
     } finally {
@@ -212,6 +229,11 @@ export function UploadSection() {
       {analysisResult && (
         <div className="w-full mt-12 mb-24" ref={resultsRef}>
           <AnalysisResults result={analysisResult} />
+          
+          {fileBase64 && fileMimeType && (
+            <ChatSection fileBase64={fileBase64} fileMimeType={fileMimeType} />
+          )}
+
           <div className="mt-12 flex justify-center">
             <Button 
               variant="outline" 
