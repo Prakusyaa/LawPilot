@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { model } from "@/lib/gemini";
+import { Content } from "@google/generative-ai";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const contents: Array<Record<string, unknown>> = [
+    const contents: Content[] = [
       {
         role: "user",
         parts: [

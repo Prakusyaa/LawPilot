@@ -14,7 +14,7 @@ LawPilot adalah aplikasi web yang membantu masyarakat non-hukum memahami dokumen
 - React 19
 - Tailwind CSS v4
 - shadcn/ui
-- Google Gemini 2.0 Flash
+- Google Gemini 2.5 Flash
 - Google Cloud Platform (GCP)
 
 ## Getting Started
