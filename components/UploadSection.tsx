@@ -14,13 +14,14 @@ import {
 } from "@/components/ui/select";
 import { FileIcon } from "@/components/ui/FileIcon";
 import { Loader2, X, AlertTriangle } from "lucide-react";
+import { AnalysisResult } from "@/types/analysis";
 
 export function UploadSection() {
   const [file, setFile] = useState<File | null>(null);
   const [docType, setDocType] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [analysisResult, setAnalysisResult] = useState<null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
@@ -61,12 +62,35 @@ export function UploadSection() {
   };
 
   const handleAnalyze = async () => {
-    console.log("Analyzing file:", file?.name, "Type:", docType);
+    if (!file) return;
     setIsAnalyzing(true);
-    // Simulate analyzing for step 3 later
-    setTimeout(() => {
+    setError(null);
+    setAnalysisResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (docType) {
+        formData.append("docType", docType);
+      }
+
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await response.json();
+
+      if (!response.ok || !json.success) {
+        throw new Error(json.error || "Gagal menganalisis dokumen.");
+      }
+
+      setAnalysisResult(json.data);
+    } catch (err: any) {
+      setError(err.message || "Terjadi kesalahan yang tidak terduga.");
+    } finally {
       setIsAnalyzing(false);
-    }, 2000);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
