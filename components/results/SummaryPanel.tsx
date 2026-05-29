@@ -1,6 +1,4 @@
 import { Summary } from "@/types/analysis";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 interface SummaryPanelProps {
   summary: Summary;
@@ -8,40 +6,52 @@ interface SummaryPanelProps {
 
 export function SummaryPanel({ summary }: SummaryPanelProps) {
   return (
-    <Card className="bg-slate-900 border-slate-800">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-white">{summary.title}</CardTitle>
-      </CardHeader>
-      <CardContent className="p-3 sm:p-6 space-y-4">
-        <div className="space-y-2 text-sm text-slate-300">
-          <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
-            <span className="font-semibold text-slate-400 min-w-[150px]">Pihak yang terlibat:</span>
-            <span>{summary.parties.join(", ")}</span>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-            <span className="font-semibold text-slate-400 min-w-[150px]">Durasi:</span>
-            <span>{summary.duration}</span>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-            <span className="font-semibold text-slate-400 min-w-[150px]">Nilai kontrak:</span>
-            <span>{summary.value}</span>
-          </div>
-        </div>
-        
-        <Separator className="bg-slate-800" />
-        
-        <div>
-          <h3 className="font-semibold text-white mb-3">Poin Penting:</h3>
-          <ul className="space-y-2">
+    <div className="rounded-lg border border-wire bg-layer flex flex-col h-[600px]">
+      {/* Panel header */}
+      <div className="px-5 py-4 border-b border-wire">
+        <p className="text-[11px] font-mono font-medium uppercase tracking-widest text-ink-3">
+          Ringkasan
+        </p>
+      </div>
+
+      {/* Content */}
+      <div className="p-5 flex flex-col gap-4 flex-1 overflow-y-auto">
+        <h3 className="text-base font-semibold text-ink leading-snug">
+          {summary.title}
+        </h3>
+
+        <dl className="flex flex-col gap-3">
+          {[
+            { label: "Pihak yang terlibat", value: summary.parties.join(", ") },
+            { label: "Durasi", value: summary.duration },
+            { label: "Nilai kontrak", value: summary.value },
+          ].map(({ label, value }) => (
+            <div key={label}>
+              <dt className="text-[11px] font-mono uppercase tracking-wide text-ink-3 mb-0.5">
+                {label}
+              </dt>
+              <dd className="text-sm text-ink-2">{value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className="border-t border-wire pt-4">
+          <p className="text-[11px] font-mono uppercase tracking-wide text-ink-3 mb-2.5">
+            Poin Penting
+          </p>
+          <ul className="flex flex-col gap-2">
             {summary.keyPoints.map((point, index) => (
-              <li key={index} className="flex items-start gap-2 text-slate-200">
-                <span className="text-blue-400 font-bold">✓</span>
-                <span>{point}</span>
+              <li key={index} className="flex items-start gap-2 text-sm text-ink-2">
+                <span
+                  className="mt-1.5 w-1 h-1 rounded-full flex-none"
+                  style={{ backgroundColor: "var(--lp-accent)" }}
+                />
+                <span className="leading-relaxed">{point}</span>
               </li>
             ))}
           </ul>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

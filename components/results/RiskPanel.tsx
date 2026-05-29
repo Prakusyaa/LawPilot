@@ -1,6 +1,4 @@
 import { RiskClause } from "@/types/analysis";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 interface RiskPanelProps {
   clauses: RiskClause[];
@@ -9,57 +7,101 @@ interface RiskPanelProps {
 export function RiskPanel({ clauses }: RiskPanelProps) {
   if (clauses.length === 0) {
     return (
-      <Card className="bg-green-950/20 border-green-900/50">
-        <CardContent className="p-3 sm:p-6 text-center text-green-400 font-medium">
-          ✅ Tidak ditemukan klausul berisiko tinggi.
-        </CardContent>
-      </Card>
+      <div className="rounded-lg border border-wire bg-layer p-5 flex items-center justify-center h-full min-h-[120px]">
+        <div
+          className="w-full rounded-md border p-5 text-center"
+          style={{
+            backgroundColor: "var(--lp-risk-low-bg)",
+            borderColor: "var(--lp-risk-low-border)",
+          }}
+        >
+          <p className="text-sm font-medium" style={{ color: "var(--lp-risk-low)" }}>
+            ✓ Tidak ditemukan klausul berisiko.
+          </p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {clauses.map((clause, index) => {
-        const isHigh = clause.riskLevel === "HIGH";
-        const isMedium = clause.riskLevel === "MEDIUM";
-        
-        const borderClass = isHigh 
-          ? "border-l-4 border-l-red-500 border-t-slate-800 border-r-slate-800 border-b-slate-800" 
-          : isMedium 
-            ? "border-l-4 border-l-amber-400 border-t-slate-800 border-r-slate-800 border-b-slate-800" 
-            : "border-l-4 border-l-blue-400 border-t-slate-800 border-r-slate-800 border-b-slate-800";
+    <div className="rounded-lg border border-wire bg-layer flex flex-col h-[600px]">
+      {/* Panel header */}
+      <div className="px-5 py-4 border-b border-wire flex items-center justify-between">
+        <p className="text-[11px] font-mono font-medium uppercase tracking-widest text-ink-3">
+          Klausul Risiko
+        </p>
+        <span
+          className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded"
+          style={{
+            backgroundColor: "var(--lp-risk-high-bg)",
+            color: "var(--lp-risk-high)",
+          }}
+        >
+          {clauses.length} ditemukan
+        </span>
+      </div>
 
-        const badgeVariant = isHigh ? "destructive" : isMedium ? "default" : "secondary";
-        const badgeClass = isHigh 
-          ? "bg-red-500/20 text-red-400 hover:bg-red-500/30" 
-          : isMedium 
-            ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30" 
-            : "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30";
-            
-        const badgeText = isHigh ? "Risiko Tinggi" : isMedium ? "Risiko Sedang" : "Perhatikan";
+      {/* Clause list */}
+      <div className="p-4 flex flex-col gap-3 overflow-y-auto flex-1">
+        {clauses.map((clause, index) => {
+          const isHigh = clause.riskLevel === "HIGH";
+          const isMedium = clause.riskLevel === "MEDIUM";
 
-        return (
-          <Card key={index} className={`bg-slate-900 overflow-hidden ${borderClass}`}>
-            <CardContent className="p-3 sm:p-5">
-              <div className="flex justify-between items-start gap-4 mb-3">
-                <h4 className="text-slate-100 font-medium leading-relaxed">{clause.clause}</h4>
-                <Badge variant={badgeVariant} className={`shrink-0 ${badgeClass} border-0`} aria-label={`Tingkat risiko: ${badgeText}`}>
-                  {badgeText}
-                </Badge>
+          const cardBg = isHigh
+            ? "var(--lp-risk-high-bg)"
+            : isMedium
+            ? "var(--lp-risk-medium-bg)"
+            : "var(--lp-risk-low-bg)";
+          const cardBorder = isHigh
+            ? "var(--lp-risk-high-border)"
+            : isMedium
+            ? "var(--lp-risk-medium-border)"
+            : "var(--lp-risk-low-border)";
+          const accentColor = isHigh
+            ? "var(--lp-risk-high)"
+            : isMedium
+            ? "var(--lp-risk-medium)"
+            : "var(--lp-risk-low)";
+          const badgeText = isHigh ? "HIGH" : isMedium ? "MEDIUM" : "LOW";
+
+          return (
+            <div
+              key={index}
+              className="rounded-md border transition-colors"
+              style={{
+                backgroundColor: cardBg,
+                borderColor: cardBorder,
+                borderLeftWidth: "2px",
+                borderLeftColor: accentColor,
+              }}
+            >
+              <div className="p-4">
+                <div className="flex justify-between items-start gap-3 mb-2">
+                  <h4 className="text-sm font-medium text-ink leading-snug">
+                    {clause.clause}
+                  </h4>
+                  {/* Solid color pill — no glow, sharp */}
+                  <span
+                    className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded shrink-0 uppercase"
+                    style={{ backgroundColor: accentColor, color: "#FFFFFF" }}
+                    aria-label={`Tingkat risiko: ${badgeText}`}
+                  >
+                    {badgeText}
+                  </span>
+                </div>
+                <p className="text-xs text-ink-2 leading-relaxed">{clause.reason}</p>
+                {clause.originalText && (
+                  <blockquote className="mt-3 pl-3 border-l-2 border-wire">
+                    <p className="text-[11px] font-mono text-ink-3 italic">
+                      &quot;{clause.originalText}&quot;
+                    </p>
+                  </blockquote>
+                )}
               </div>
-              <p className="text-slate-400 text-sm mb-4">{clause.reason}</p>
-              
-              {clause.originalText && (
-                <blockquote className="border-l-2 border-slate-700 pl-3 py-1 mt-3 bg-slate-950/50 rounded-r-md">
-                  <p className="text-slate-500 italic text-xs">
-                    &quot;{clause.originalText}&quot;
-                  </p>
-                </blockquote>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

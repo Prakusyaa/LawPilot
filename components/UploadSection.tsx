@@ -2,9 +2,6 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useDropzone, FileRejection } from "react-dropzone";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -13,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FileIcon } from "@/components/ui/FileIcon";
-import { Loader2, X, AlertTriangle } from "lucide-react";
+import { X, AlertTriangle, FileText } from "lucide-react";
 import { AnalysisResult } from "@/types/analysis";
 import { AnalysisResults } from "@/components/results/AnalysisResults";
 import { ChatSection } from "@/components/ChatSection";
@@ -149,120 +146,149 @@ export function UploadSection() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  const canAnalyze = !!file && !isAnalyzing;
+
   return (
-    <div className="w-full flex flex-col items-center">
-      <Card className="w-full max-w-2xl bg-slate-900 border-slate-800 mx-auto">
-      <CardContent className="p-3 sm:p-6">
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <Select value={docType} onValueChange={(val) => setDocType(val || "")}>
-              <SelectTrigger className="w-full bg-slate-950 border-slate-700 text-slate-100">
-                <SelectValue placeholder="Pilih jenis dokumen (opsional)" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 text-slate-100">
-                <SelectItem value="employment">Kontrak Kerja</SelectItem>
-                <SelectItem value="rental">Perjanjian Sewa</SelectItem>
-                <SelectItem value="business">Perjanjian Bisnis</SelectItem>
-                <SelectItem value="other">Lainnya</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="w-full flex flex-col">
+      {/* Upload card */}
+      <div className="rounded-lg border border-wire bg-layer p-5 sm:p-6 flex flex-col gap-5">
 
-          <div
-            {...getRootProps()}
-            role="button"
-            aria-label="Upload dokumen"
-            className={`
-              relative flex flex-col items-center justify-center min-h-[180px] p-6 rounded-xl border-2 border-dashed cursor-pointer transition-colors text-center
-              ${
-                isDragActive
-                  ? "border-blue-400 bg-blue-950/30"
-                  : "border-slate-600 bg-slate-900 hover:bg-slate-800/50 hover:border-slate-500"
-              }
-            `}
-          >
-            <input {...getInputProps()} />
-            
-            {file ? (
-              <div className="flex flex-col items-center gap-3">
-                <FileIcon type={file.type} />
-                <div className="flex flex-col items-center">
-                  <span className="text-slate-200 font-medium break-all text-sm">{file.name}</span>
-                  <span className="text-slate-400 text-xs mt-1">{formatFileSize(file.size)}</span>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Hapus file"
-                  className="absolute top-2 right-2 h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-800"
-                  onClick={removeFile}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-2">
-                <p className="text-slate-200 font-medium">
-                  {isDragActive
-                    ? "Lepaskan file di sini..."
-                    : "Drag & drop PDF atau foto dokumen di sini"}
-                </p>
-                {!isDragActive && (
-                  <p className="text-slate-400 text-sm">
-                    atau klik untuk pilih file • Maks. 10MB • PDF, JPG, PNG
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {error && (
-            <Alert variant="destructive" className="bg-red-950/30 text-red-400 border-red-900/50" role="alert">
-              <AlertTriangle className="h-4 w-4 !text-red-400" aria-hidden="true" />
-              <AlertDescription className="ml-2 font-medium">
-                {error}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <Button 
-            size="lg" 
-            className="w-full font-semibold"
-            disabled={!file || isAnalyzing}
-            onClick={handleAnalyze}
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Sedang menganalisis...
-              </>
-            ) : (
-              "🔍 Analisis Dokumen"
-            )}
-          </Button>
+        {/* Document type selector */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-mono font-medium uppercase tracking-widest text-ink-3">
+            Document Type
+          </label>
+          <Select value={docType} onValueChange={(val) => setDocType(val || "")}>
+            <SelectTrigger
+              className="w-full font-sans text-sm border-wire bg-background text-ink-2"
+            >
+              <SelectValue placeholder="Pilih jenis dokumen (opsional)" />
+            </SelectTrigger>
+            <SelectContent
+              className="border-wire bg-layer text-ink"
+            >
+              <SelectItem value="employment">Kontrak Kerja</SelectItem>
+              <SelectItem value="rental">Perjanjian Sewa</SelectItem>
+              <SelectItem value="business">Perjanjian Bisnis</SelectItem>
+              <SelectItem value="other">Lainnya</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </CardContent>
-    </Card>
-    
+
+        {/* Dropzone */}
+        <div
+          {...getRootProps()}
+          role="button"
+          aria-label="Upload dokumen"
+          className="relative flex flex-col items-center justify-center min-h-[160px] sm:min-h-[180px] p-6 rounded-md border-2 border-dashed cursor-pointer transition-colors text-center"
+          style={{
+            borderColor: isDragActive ? "var(--lp-accent)" : "var(--lp-border)",
+            backgroundColor: isDragActive
+              ? "color-mix(in oklch, var(--lp-accent) 6%, transparent)"
+              : "var(--background)",
+          }}
+        >
+          <input {...getInputProps()} />
+
+          {file ? (
+            <div
+              className="flex items-center gap-3 w-full max-w-sm rounded-md border border-wire p-3"
+              style={{ backgroundColor: "var(--lp-surface)" }}
+            >
+              <FileIcon type={file.type} />
+              <div className="flex flex-col items-start flex-1 min-w-0">
+                <span className="text-sm font-medium text-ink truncate w-full text-left">
+                  {file.name}
+                </span>
+                <span className="text-xs text-ink-3 mt-0.5">
+                  {formatFileSize(file.size)}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={removeFile}
+                aria-label="Hapus file"
+                className="shrink-0 h-7 w-7 flex items-center justify-center rounded text-ink-3 hover:text-ink hover:bg-layer-2 transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              <FileText
+                className="h-8 w-8 mb-1"
+                style={{
+                  color: isDragActive ? "var(--lp-accent)" : "var(--lp-text-3)",
+                }}
+              />
+              <p className="text-sm font-medium text-ink">
+                {isDragActive
+                  ? "Lepaskan file di sini..."
+                  : "Drag & drop PDF atau foto dokumen"}
+              </p>
+              {!isDragActive && (
+                <p className="text-xs text-ink-3">
+                  atau klik untuk pilih file · Maks. 10MB · PDF, JPG, PNG
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Inline error */}
+        {error && (
+          <div
+            role="alert"
+            className="flex items-start gap-2.5 rounded-md border px-4 py-3"
+            style={{
+              backgroundColor: "var(--lp-risk-high-bg)",
+              borderColor: "var(--lp-risk-high-border)",
+            }}
+          >
+            <AlertTriangle
+              className="h-4 w-4 mt-0.5 shrink-0"
+              style={{ color: "var(--lp-risk-high)" }}
+              aria-hidden="true"
+            />
+            <p className="text-sm font-medium" style={{ color: "var(--lp-risk-high)" }}>
+              {error}
+            </p>
+          </div>
+        )}
+
+        {/* Analyze CTA */}
+        <button
+          disabled={!canAnalyze}
+          onClick={handleAnalyze}
+          className="w-full py-3 rounded-md text-sm font-semibold uppercase tracking-wide transition-colors"
+          style={{
+            backgroundColor: canAnalyze ? "var(--lp-accent)" : "var(--lp-elevated)",
+            color: canAnalyze ? "var(--lp-accent-fg)" : "var(--lp-text-3)",
+            cursor: canAnalyze ? "pointer" : "not-allowed",
+          }}
+        >
+          {isAnalyzing ? "Analyzing Document..." : "Analyze Document"}
+        </button>
+      </div>
+
+      {/* Results */}
       {isAnalyzing ? (
         <AnalysisSkeleton />
       ) : analysisResult ? (
-        <div className="w-full mt-12 mb-24" ref={resultsRef}>
+        <div className="w-full mt-6" ref={resultsRef}>
           <AnalysisResults result={analysisResult} />
-          
+
           {fileBase64 && fileMimeType && (
             <ChatSection fileBase64={fileBase64} fileMimeType={fileMimeType} />
           )}
 
-          <div className="mt-12 flex justify-center">
-            <Button 
-              variant="outline" 
-              onClick={resetAll} 
-              className="bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={resetAll}
+              className="px-4 py-2.5 rounded-md border border-wire bg-layer text-ink-2 hover:bg-layer-2 hover:text-ink text-sm transition-colors"
             >
-              🔄 Analisis Dokumen Lain
-            </Button>
+              ↺ Analisis Dokumen Lain
+            </button>
           </div>
         </div>
       ) : null}
